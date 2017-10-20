@@ -1,0 +1,112 @@
+
+#+TITLE: Literate Programming usando Emacs y Org-mode
+#+AUTHOR: Martín Alsinet
+#+DATE: 2017
+#+OPTIONS: toc:nil ':t num:nil
+#+LANGUAGE: es
+
+* Presentación
+
+
+
+
+                  Martín Alsinet
+
+
+               martin@alsinet.com.ar
+
+* ¿Qué es Literate Programming?
+
+
+
+
+             Código Fuente + Comentarios
+ 
+                          vs
+
+             Comentarios + Código Fuente
+
+* Origen
+
+#+BEGIN_QUOTE
+*I believe that the time is ripe for significantly better documentation of programs, and that we can best achieve this by considering programs to be works of literature. Hence, my title: "Literate Programming.*"
+
+*Let us change our traditional attitude to the construction of programs: Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.*
+#+END_QUOTE
+
+-- Donald Knuth, Literate Programming (1984)
+
+* Ventajas
+
+
+- Permite centralizar código y documentación en un solo archivo fácil de navegar
+
+
+- Permite reproducir exactamente todos y cada uno de los pasos de manera sencilla
+
+* Desventajas
+
+
+- Hay que tomarse el tiempo de pensar y de escribir algo coherente
+
+
+- Ver punto anterior
+
+* ¿Cuándo conviene usarlo?
+
+
+ Cuando se tienen procedimientos o secuencias de pasos complejas que requieren mucho trabajo para hacerlas funcionar y que luego de logradas se dejan sin modificar durante mucho tiempo (y generalmente se olvidan)
+
+
+- Configuración, infraestructura, building, devops
+
+- Aprendizaje, tutoriales, capacitación, onboarding
+
+- Reproducible research, exploratory programming, ML, POC
+
+* Emacs y Org-Mode
+
+
+- *Emacs*
+  Es el editor de los programadores de mediana edad (cof, cof, *viejos*)
+
+
+- *Org-Mode*
+  Es una especie de Markdown mejorado con hooks para ejecutar código
+
+
+ No tengan miedo, *no es obligatorio usar Emacs*....
+
+* Alternativas a Emacs
+
+
+- Coffeescript
+  - http://coffeescript.org/#literate 
+  - [[http://cl.ly/LxEu][Code example]]
+
+
+- Jupyter Notebooks
+  - https://try.jupyter.org/
+  - [[https://github.com/srcolinas/Machine_Learning_basico/blob/master/regresion_lineal.ipynb][Machine Learning example]]
+
+
+- Eve
+  - http://play.witheve.com
+  - [[http://play.witheve.com/#/examples/flappy.eve][Flappy Bird example]]
+
+* Ejemplos
+
+
+- Dockerfiles
+
+
+- Exploratory Programming
+
+* ¿Preguntas?
+
+
+
+
+ https://github.com/malsinet/talks/literate-programming
+  
+

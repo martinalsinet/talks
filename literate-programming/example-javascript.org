@@ -1,0 +1,504 @@
+
+#+TITLE: Ejemplo de Literate Programming: Javascript
+#+AUTHOR: Martín Alsinet
+#+DATE: 2017
+#+OPTIONS: ':t num:nil
+#+LANGUAGE: es
+
+* Introducción
+
+En este documento vamos a explorar las técnicas de Literate Programming con un ejemplo práctico en Javascript.
+
+La idea es analizar un archivo de estadísticas de accidentes en la ciudad de Medellín y armar una página sencilla con los resultados más interesantes.
+
+* Setup
+** Package.json
+
+Generamos un =package.json= mínimo para comenzar el proyecto
+
+#+BEGIN_SRC js :tangle package.json
+{
+  "name": "Literate Programming",
+  "version": "0.1.0",
+  "description": "Literate Programming en Javascript",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm start"
+  },
+  "author": "Martín Alsinet",
+  "license": "CC",
+}
+#+END_SRC
+
+** Instalar dependencias
+
+Vamos a usar las siguientes dependencias
+
+- sqlite :: Base de datos en un archivo
+- csv-parse  :: Parser de archivos CSV
+
+#+BEGIN_SRC sh :results output drawer
+npm install sqlite3 csv-parse
+#+END_SRC
+
+#+RESULTS:
+:RESULTS:
+
+> sqlite3@3.1.13 install /app/node_modules/sqlite3
+> node-pre-gyp install --fallback-to-build
+
+[sqlite3] Success: "/app/node_modules/sqlite3/lib/binding/node-v57-linux-x64/node_sqlite3.node" is installed via remote
++ lazy@1.0.11
++ sqlite3@3.1.13
+added 111 packages, removed 131 packages and updated 3 packages in 19.627s
+:END:
+
+* Fuente de datos
+** Origen
+
+La fuente de los datos que vamos a usar es la iniciativa de Open Data de la Alcaldía de Medellín, que pone a disposición [[https://geomedellin-m-medellin.opendata.arcgis.com/datasets/a65c3aff0ef34973a2441b6cd0fbc24a_8][las estadísticas de accidentes de tránsito del año 2016]]
+
+** Formato
+
+El formato de los datos es un archivo CSV, veamos qué tiene adentro
+
+#+BEGIN_SRC sh
+#ls *.csv
+#head Accidentalidad_2016.csv
+head -n 1 Accidentalidad_2016.csv | tr ',' '\n'
+#+END_SRC
+
+#+RESULTS:
+| OBJECTID      |
+| X             |
+| Y             |
+| RADICADO      |
+| FECHA         |
+| HORA          |
+| DIA           |
+| PERIODO       |
+| CLASE         |
+| DIRECCION     |
+| DIRECCION_ENC |
+| CBML          |
+| TIPO_GEOCOD   |
+| GRAVEDAD      |
+| BARRIO        |
+| COMUNA        |
+| DISENO        |
+
+** ¿Qué columnas me interesan?
+
+- objectid
+- fecha
+- hora
+- dia
+- clase
+- gravedad
+- barrio
+- comuna
+- diseño
+
+* Importar archivo CSV en una base sqlite
+** Parsear CSV
+
+#+BEGIN_SRC js :results output :tangle parser.js
+const fs = require('fs');
+const parse = require('csv-parse')
+
+
+function columns(line)
+{
+    return line.map(s => s.toLowerCase());
+}
+
+
+parse_csv = function(filename, fn, limit){
+    fs.readFile(filename, "utf8", function (err, fileData) {
+        var opts = {columns: columns, trim: true};
+        if (limit) {
+            opts.to = limit;
+        }
+        parse(fileData, opts, (err, rows) => fn(rows));
+    });
+}
+
+module.exports = parse_csv;
+//parse_csv('Accidentalidad_2016.csv', console.log, 2);
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[ { objectid: '260034',
+    x: '833887.52',
+    y: '1179103.47',
+    radicado: '1520771',
+    fecha: '2016-01-29T00:00:00.000Z',
+    hora: '06:50 AM',
+    dia: 'VIERNES',
+    periodo: '2016',
+    clase: 'Choque',
+    direccion: 'CR 50 CL 8',
+    direccion_enc: 'CR  050   008  000 00000',
+    cbml: '1507',
+    tipo_geocod: 'Malla vial',
+    gravedad: 'HERIDO',
+    barrio: 'Campo Amor',
+    comuna: 'Guayabal',
+    diseno: 'Tramo de via' },
+  { objectid: '260035',
+    x: '833344.5',
+    y: '1182963.99',
+    radicado: '1520840',
+    fecha: '2016-01-29T00:00:00.000Z',
+    hora: '10:55 AM',
+    dia: 'VIERNES',
+    periodo: '2016',
+    clase: 'Atropello',
+    direccion: 'CL 44 CR 65',
+    direccion_enc: 'CL  044   065  000 00000',
+    cbml: '1103',
+    tipo_geocod: 'Malla vial',
+    gravedad: 'HERIDO',
+    barrio: 'Naranjal',
+    comuna: 'Laureles Estadio',
+    diseno: 'Tramo de via' } ]
+#+end_example
+
+** Database Setup
+
+#+BEGIN_SRC js :tangle setup.js :results output
+const sqlite3 = require('sqlite3').verbose();
+
+var schema_q = `CREATE TABLE IF NOT EXISTS accidentes (
+      id INTEGER PRIMARY_KEY,
+   fecha TEXT,
+     dia TEXT,
+   clase TEXT,
+gravedad TEXT,
+  barrio TEXT,
+  comuna TEXT,
+  diseno TEXT
+)`
+
+
+var setup = function(db) {
+    return {
+        schema: function(){
+            db.run("drop table if exists accidentes");
+            db.run(schema_q);
+        },
+        truncate: function(){
+            db.run("begin transaction");
+            db.run("delete from accidentes");
+            db.run("commit");
+        },
+        star: function(){
+            db.all(
+                "select * from accidentes", 
+                (err, rows) => console.log(rows)
+            );
+        },
+        count: function(){
+            db.all(
+                "select count(1) as rows from accidentes", 
+                (err, rows) => console.log(rows)
+            );
+        }
+    };
+};
+
+module.exports = setup;
+
+//s = setup(new sqlite3.Database('database.db'));
+//s.schema();
+//s.count();
+#+END_SRC
+
+#+RESULTS:
+: [ { rows: 0 } ]
+
+** Insertar datos
+
+#+BEGIN_SRC js :tangle insert.js :results output
+var insert_q = `INSERT INTO accidentes (
+  id, fecha, dia, clase, gravedad, 
+  barrio, comuna, diseno
+) VALUES (
+  :objectid, ':fecha', ':dia', ':clase', ':gravedad', 
+  ':barrio', ':comuna', ':diseno'
+)
+`;
+
+
+function query(q, val) {
+    return q
+        .replace(':objectid', val.objectid)
+        .replace(':fecha', val.fecha)
+        .replace(':dia', val.dia)
+        .replace(':clase', val.clase)
+        .replace(':gravedad', val.gravedad)
+        .replace(':barrio', val.barrio)
+        .replace(':comuna', val.comuna)
+        .replace(':diseno', val.diseno)
+}
+
+
+function ampm_to_24h(text)
+{
+    var hour = parseInt(text.substr(0,2));
+    var ampm = text.substr(6,2);
+    if ((hour == 12) && (ampm == "AM")) {
+        hour = 0;
+    }
+    if ((hour != 12) && (ampm == "PM")) {
+        hour+= 12;
+    }
+    return ("0"+String(hour)).substr(-2)+":"+text.substr(3,2);
+}
+
+
+function fix_date(row)
+{
+    row.fecha = row.fecha.substr(0,10) + " " + ampm_to_24h(row.hora);
+    return row;
+}
+
+
+function show_r(rows)
+{
+    rows.map(function(row){
+        console.log(row);
+        console.log("");
+    });
+}
+
+
+function show_f(rows)
+{
+    rows.map(function(row){
+        console.log(fix_date(row));
+        console.log("");
+    });
+}
+
+
+function show_q(rows)
+{
+    rows.map(function(row){
+        console.log(query(insert_q, fix_date(row)));
+    });
+}
+
+
+function show(rows)
+{
+    rows.map(function(row){
+        console.log(row);
+        console.log("");
+        console.log(query(insert_q, row));
+        console.log(query(insert_q, fix_date(row)));
+    });
+}
+
+
+function insert(rows)
+{
+    db.serialize(function() {
+        db.run("begin transaction");
+        rows.map(function(row){
+            db.run(query(insert_q, fix_date(row)));
+        });
+        db.run("commit");
+        finished();
+    });
+}
+
+
+function finished()
+{
+    if (s !== null) {
+        s.count();
+        s.star();
+    }
+}
+
+
+const sqlite3 = require('sqlite3').verbose();
+const parser = require("/app/parser.js");
+const setup = require("/app/setup.js");
+const inputFile = 'Accidentalidad_2016.csv';
+var db = new sqlite3.Database('database.db');
+
+
+//parse_csv(inputFile, show_r, 2);
+//parse_csv(inputFile, show_f, 2);
+//parse_csv(inputFile, show_q, 2);
+//parse_csv(inputFile, show, 2);
+
+
+//s = setup(db);
+//s.truncate();
+//parse_csv(inputFile, insert, 5);
+//parse_csv(inputFile, insert);
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+{ objectid: '260034',
+  x: '833887.52',
+  y: '1179103.47',
+  radicado: '1520771',
+  fecha: '2016-01-29T00:00:00.000Z',
+  hora: '06:50 AM',
+  dia: 'VIERNES',
+  periodo: '2016',
+  clase: 'Choque',
+  direccion: 'CR 50 CL 8',
+  direccion_enc: 'CR  050   008  000 00000',
+  cbml: '1507',
+  tipo_geocod: 'Malla vial',
+  gravedad: 'HERIDO',
+  barrio: 'Campo Amor',
+  comuna: 'Guayabal',
+  diseno: 'Tramo de via' }
+
+{ objectid: '260035',
+  x: '833344.5',
+  y: '1182963.99',
+  radicado: '1520840',
+  fecha: '2016-01-29T00:00:00.000Z',
+  hora: '10:55 AM',
+  dia: 'VIERNES',
+  periodo: '2016',
+  clase: 'Atropello',
+  direccion: 'CL 44 CR 65',
+  direccion_enc: 'CL  044   065  000 00000',
+  cbml: '1103',
+  tipo_geocod: 'Malla vial',
+  gravedad: 'HERIDO',
+  barrio: 'Naranjal',
+  comuna: 'Laureles Estadio',
+  diseno: 'Tramo de via' }
+
+#+end_example
+
+* Explorar las queries más interesantes
+
+- Cantidad de accidentes por mes
+- Cantidad de accidentes por día de la semana
+- Cantidad de accidentes por hora del día
+- Cantidad de accidentes por gravedad
+- Cantidad de accidentes por comuna y barrio
+- Cantidad de accidentes por lugar
+
+** Queries
+
+#+BEGIN_SRC js :results output raw
+function table_row(cells){
+    console.log("|" + cells.join("|") + "|");
+}
+
+
+function table(rows){
+    console.log("|---|");
+    table_row(Object.keys(rows[0]));
+    console.log("|---|");
+    rows.map(row => table_row(Object.keys(row).map(k => row[k])));
+    console.log("|---|");
+}
+
+
+var query = {
+    rows: "SELECT * FROM accidentes LIMIT 5",
+
+    mensual: 
+` SELECT substr(fecha, 0, 8) AS mes, count(1) AS accidentes 
+    FROM accidentes 
+GROUP BY substr(fecha, 0, 8)
+ORDER BY 1 DESC`,
+
+    diario: 
+` SELECT dia, count(1) AS accidentes 
+    FROM accidentes 
+GROUP BY dia
+ORDER BY 2 DESC`,
+
+    horario: 
+` SELECT substr(fecha, 12, 2) as hora, count(1) AS accidentes 
+    FROM accidentes 
+GROUP BY substr(fecha, 12, 2)
+ORDER BY 1`,
+
+    gravedad: 
+` SELECT gravedad, count(1) AS accidentes 
+    FROM accidentes 
+GROUP BY gravedad
+ORDER BY 2 DESC`,
+
+    comuna: 
+` SELECT comuna, count(1) AS accidentes 
+    FROM accidentes 
+GROUP BY comuna
+ORDER BY 2 DESC`,
+
+    barrio: 
+` SELECT barrio, count(1) AS accidentes 
+    FROM accidentes 
+GROUP BY barrio
+ORDER BY 2 DESC`,
+
+    comuna_barrio: 
+` SELECT comuna, barrio, count(1) AS accidentes 
+    FROM accidentes 
+GROUP BY comuna, comuna, barrio
+ORDER BY 3 DESC`,
+
+    diseno:
+` SELECT diseno, count(1) AS accidentes 
+    FROM accidentes 
+GROUP BY diseno
+ORDER BY 2 DESC`
+
+};
+
+
+
+
+const sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database('database.db');
+
+db.all(
+    query.diseno, 
+    (err, rows) => table(rows)
+);
+
+#+END_SRC
+
+#+RESULTS:
+|---------------+------------|
+| diseno        | accidentes |
+|---------------+------------|
+| Tramo de via  |      33492 |
+| Interseccion  |       6149 |
+| Lote o Predio |       1595 |
+| Glorieta      |        901 |
+|               |        235 |
+| Paso Elevado  |        156 |
+| Puente        |        121 |
+| Ciclo Ruta    |         93 |
+| Paso Inferior |         66 |
+| Via peatonal  |         19 |
+| Paso a Nivel  |          7 |
+| Tunel         |          4 |
+| Pontón        |          3 |
+|---------------+------------|
+
+* Crear una API JSON para las queries
+** API
+* Hacer una página mínima con algunos resultados
+** Rutas estáticas
+** Index HTML
+** Accidentes por comuna y barrio
+* Putting it all together
