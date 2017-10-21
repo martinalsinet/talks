@@ -95,7 +95,7 @@ Aparentemente hay una ubicación geográfica, porque están los campos =X= e =Y=
 
    Entre las opciones disponibles, utilizo el parámetro =columns= para pasarle una función que recibe la primera fila (los encabezados) y debe devolver un array con los nombres de cada columna. Además uso el parámetro =trim: true= para que el módulo csv le quite a los registros automáticamente los espacios en blanco que haya a ambos lados del contenido de cada celda. La otra opción que uso es =ops.to= que permite cortar el procesamiento del archivo luego de un número de líneas.
 
-#+BEGIN_SRC js :results output drawer :tangle parser.js
+#+BEGIN_SRC js :results output drawer :tangle src/parser.js
 const fs = require('fs');
 const parse = require('csv-parse')
 
@@ -152,7 +152,7 @@ Los métodos del objeto =schema= son:
 - rows :: Ejecuta un =SELECT= de la tabla =accidentes= e imprime todos los registros de la tabla con =console.log=
 - count :: Ejecuta un =SELECT count(1)= de la tabla =accidentes= e imprime el resutlado con =console.log=
 
-#+BEGIN_SRC js :results output drawer :tangle schema.js
+#+BEGIN_SRC js :results output drawer :tangle src/schema.js
 var schema_q = `CREATE TABLE IF NOT EXISTS accidentes (
       id INTEGER PRIMARY_KEY,
    fecha TEXT,
@@ -322,8 +322,8 @@ function insert(rows)
 
 
 const sqlite3 = require('sqlite3').verbose();
-const parser = require("/app/parser.js");
-const db_schema = require("/app/schema.js");
+const parser = require("/app/src/parser.js");
+const db_schema = require("/app/src/schema.js");
 const inputFile = 'Accidentalidad_2016.csv';
 var db = new sqlite3.Database('database.db');
 
@@ -359,7 +359,7 @@ Me gustaría obtener la siguiente información:
 
 En esta sección creo el objeto =query= que almacena cada una de las consultas que voy a utilizar. Además le agregué un método =rows= que devuelve un select de la tabla para cuando quiera revisar los registros individualmente.
 
-#+BEGIN_SRC js :results output raw drawer :tangle queries.js
+#+BEGIN_SRC js :results output raw drawer :tangle src/queries.js
 var query = {
     rows: function(limit){
         return "SELECT * FROM accidentes LIMIT " + limit.toString();
@@ -432,7 +432,7 @@ module.exports = query;
 
 En esta sección, usando el objeto =query=, creo un objeto =accidentes= que es el que se encarga de realizar efectivamente las consultas sobre la base de datos. Debido a que es un ejercicio de ejemplo no le agregué ningún tipo de control de errores. Si la query falla por algún motivo node va a devolver el error en la consola.
 
-#+BEGIN_SRC js :results output raw drawer :tangle accidentes.js
+#+BEGIN_SRC js :results output raw drawer :tangle src/accidentes.js
 var accidentes = function(db, query){
     return {
         rows: function(limit, fn){
@@ -492,7 +492,7 @@ var accidentes = function(db, query){
     };
 }
 
-const query = require('/app/queries.js');
+const query = require('/app/src/queries.js');
 const sqlite3 = require('sqlite3').verbose();
 
 var db = new sqlite3.Database('database.db');
@@ -518,7 +518,7 @@ module.exports = acc;
 
 *** Ver como tabla
 
-#+BEGIN_SRC js :tangle table.js
+#+BEGIN_SRC js :tangle src/table.js
 function table_row(cells){
     console.log("|" + cells.join("|") + "|");
 }
@@ -540,8 +540,8 @@ module.exports = table;
 Para crear la API me baso en el objeto accidentes del punto anterior.
 
 #+BEGIN_SRC js :results output raw drawer
-var accidentes = require("/app/accidentes.js");
-var view_as_table = require("/app/table.js");
+var accidentes = require("/app/src/accidentes.js");
+var view_as_table = require("/app/src/table.js");
 
 accidentes.por_dia(view_as_table);
 #+END_SRC
@@ -565,8 +565,8 @@ accidentes.por_dia(view_as_table);
 
 Creo un controlador que agrega métodos para exponer las consultas.
 
-#+BEGIN_SRC js :tangle controller.js
-var accidentes = require('/app/accidentes.js');
+#+BEGIN_SRC js :tangle src/controller.js
+var accidentes = require('/app/src/accidentes.js');
 
 exports.por_mes = function(req, res){
     accidentes.por_mes(rows => res.json(rows));
@@ -603,9 +603,9 @@ exports.por_diseno = function(req, res){
 
 ** Rutas
 
-#+BEGIN_SRC js :tangle routes.js
+#+BEGIN_SRC js :tangle src/routes.js
 module.exports = function(app) {
-  var accidentes = require('/app/controller.js');
+  var accidentes = require('/app/src/controller.js');
 
   app.route('/accidentes/por_mes')
     .get(accidentes.por_mes);
@@ -636,15 +636,15 @@ module.exports = function(app) {
 
 ** Servidor
 
-#+BEGIN_SRC js :tangle server.js
+#+BEGIN_SRC js :tangle src/server.js
 var express = require('express');
 var app = express();
 var port = process.env.PORT || 3000;
-var routes = require('/app/routes.js');
+var routes = require('/app/src/routes.js');
 routes(app);
 
 app.get('/', function(req, res) {
-    res.sendFile('/app/index.html');
+    res.sendFile('/app/src/index.html');
 });
 
 app.use(function(req, res) {
@@ -655,7 +655,7 @@ app.listen(port, '0.0.0.0');
 
 // exit with ctrl-c
 process.on('SIGINT', function() {
-    console.log("Caught interrupt signal, exiting");
+    console.log(": Caught interrupt signal, exiting...");
     process.exit();
 });
 
@@ -678,7 +678,7 @@ curl http://localhost:3000/accidentes/por_dia
 * Hacer una página mínima con resultados
 ** Index HTML
 
-#+BEGIN_SRC html :tangle index.html
+#+BEGIN_SRC html :tangle src/index.html
 <!DOCTYPE HTML>
 <html>
   <head>
