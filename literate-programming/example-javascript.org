@@ -539,7 +539,7 @@ module.exports = table;
 
 Para crear la API me baso en el objeto accidentes del punto anterior.
 
-#+BEGIN_SRC js :results output raw drawer :tangle api.js
+#+BEGIN_SRC js :results output raw drawer
 var accidentes = require("/app/accidentes.js");
 var view_as_table = require("/app/table.js");
 
@@ -562,6 +562,8 @@ accidentes.por_dia(view_as_table);
 :END:
 
 ** Controlador
+
+Creo un controlador que agrega métodos para exponer las consultas.
 
 #+BEGIN_SRC js :tangle controller.js
 var accidentes = require('/app/accidentes.js');
@@ -641,11 +643,21 @@ var port = process.env.PORT || 3000;
 var routes = require('/app/routes.js');
 routes(app);
 
+app.get('/', function(req, res) {
+    res.sendFile('/app/index.html');
+});
+
 app.use(function(req, res) {
   res.status(404).send({url: req.originalUrl + ' not found'})
 });
 
 app.listen(port, '0.0.0.0');
+
+// exit with ctrl-c
+process.on('SIGINT', function() {
+    console.log("Caught interrupt signal, exiting");
+    process.exit();
+});
 
 console.log('Web server started on: ' + port);
 #+END_SRC
@@ -665,5 +677,37 @@ curl http://localhost:3000/accidentes/por_dia
 
 * Hacer una página mínima con resultados
 ** Index HTML
-** Accidentes por comuna y barrio
-* Putting it all together
+
+#+BEGIN_SRC html :tangle index.html
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <title>Accidentes en Medellín - Año 2016</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.com/libraries/Chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"/>
+  </head>
+  <body>
+    <h1>Accidentes en Medellín - Año 2016</h1>
+    <div class="pure-g">
+      <div class="pure-u-1-2">
+        <h2>Por mes</h2>
+        <h2>Por día</h2>
+        <h2>Por hora</h2>
+      </div>
+
+      <div class="pure-u-1-2">
+        <h2>Por Comuna</h2>
+        <h2>Por Barrio</h2>
+        <h2>Por Lugar</h2>
+      </div>
+    </div>
+
+  </body>
+</html>
+#+END_SRC
+
