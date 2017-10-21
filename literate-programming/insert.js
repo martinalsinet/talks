@@ -51,6 +51,15 @@ function show_r(rows)
 }
 
 
+function show_f(rows)
+{
+    rows.map(function(row){
+        console.log(fix_date(row));
+        console.log("");
+    });
+}
+
+
 function show_q(rows)
 {
     rows.map(function(row){
@@ -69,6 +78,7 @@ function show(rows)
     });
 }
 
+
 function insert(rows)
 {
     db.serialize(function() {
@@ -77,18 +87,34 @@ function insert(rows)
             db.run(query(insert_q, fix_date(row)));
         });
         db.run("commit");
-        db.all(
-            "select * from accidentes LIMIT 5", 
-            (err, rows) => console.log(rows)
-        );
+        finished();
     });
+}
+
+
+function finished()
+{
+    if (s !== null) {
+        s.count();
+        s.star();
+    }
 }
 
 
 const sqlite3 = require('sqlite3').verbose();
 const parser = require("/app/parser.js");
+const setup = require("/app/setup.js");
 const inputFile = 'Accidentalidad_2016.csv';
 var db = new sqlite3.Database('database.db');
 
+
+//parse_csv(inputFile, show_r, 2);
+//parse_csv(inputFile, show_f, 2);
 //parse_csv(inputFile, show_q, 2);
-parse_csv(inputFile, insert, 1);
+//parse_csv(inputFile, show, 2);
+
+
+//s = setup(db);
+//s.truncate();
+//parse_csv(inputFile, insert, 5);
+//parse_csv(inputFile, insert);

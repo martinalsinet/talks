@@ -279,7 +279,7 @@ ENTRYPOINT ["mit-scheme"]
 *** pgadmin4
 *** mysql
 *** phpmyadmin
-P** Utilidades
+** Utilidades
 *** texlive
 
 #+BEGIN_SRC dockerfile :exports code :padline no :tangle build/texlive/Dockerfile
