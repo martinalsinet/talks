@@ -57,13 +57,13 @@ var accidentes = function(db, query){
     };
 }
 
-const q = require('/app/queries.js');
+const query = require('/app/queries.js');
 const sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('database.db');
 
-var acc = accidentes(db, q.query);
+var db = new sqlite3.Database('database.db');
+var acc = accidentes(db, query);
 
 module.exports = acc;
 
 //acc.por_dia(console.log);
-acc.rows(1, console.log);
+//acc.rows(1, console.log);

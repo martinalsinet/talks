@@ -26,7 +26,7 @@ Generamos un =package.json= mínimo para comenzar el proyecto
     "start": "npm start"
   },
   "author": "Martín Alsinet",
-  "license": "CC",
+  "license": "CC"
 }
 #+END_SRC
 
@@ -36,9 +36,10 @@ Vamos a usar las siguientes dependencias
 
 - sqlite :: Base de datos en un archivo
 - csv-parse  :: Parser de archivos CSV
+- express :: Webserver
 
 #+BEGIN_SRC sh :results output drawer
-npm install sqlite3 csv-parse
+npm install sqlite3 csv-parse express
 #+END_SRC
 
 #+RESULTS:
@@ -87,7 +88,7 @@ La fecha y la hora están en dos campos separados, vamos a fusionarlas en uno so
 
 Aparentemente hay una ubicación geográfica, porque están los campos =X= e =Y=, pero no son campos de latitud y longitud sino que la ubicación está en formato ARCGIS. Para no complicar el ejemplo, no vamos a utilizar las coordenadas.
 
-* Importar archivo CSV en una base sqlite
+* Importar CSV a una base sqlite
 ** Parsear CSV
 
    Para parsear el archivo usamos el módulo =csv-parse= que permite leer un archivo y pasarle una función que recibe un array de objetos con un registro por cada fila.
@@ -140,7 +141,7 @@ module.exports = parse_csv;
     diseno: 'Tramo de via' } ]
 :END:
 
-** Schema de base de datos
+** Crear Schema
 
 En este caso creo un objeto =schema= que me permite realizar algunas operaciones de mantenimiento de la base de datos. Uso estas operaciones para verificar el funcionamiento del proceso de inserción.
 
@@ -208,7 +209,7 @@ module.exports = schema;
 []
 :END:
 
-** Insertar datos
+** Insertar registros
 
 Para insertar los datos parseados uso la función =insert= definida más abajo que ejecuta la query =insert_q= para cada fila del archivo original. Los inserts se ejecutan dentro de una transacción en un entorno serializado, lo que asegura los datos se inserten en secuencia. Luego del commit de la tranasacción se llama a una función =finished= que indica que se ha terminado de procesar los datos.
 
@@ -326,15 +327,14 @@ const db_schema = require("/app/schema.js");
 const inputFile = 'Accidentalidad_2016.csv';
 var db = new sqlite3.Database('database.db');
 
-
+// Ejemplos:
 //parse_csv(inputFile, show_r, 2);
 //parse_csv(inputFile, show_f, 2);
 //parse_csv(inputFile, show_q, 2);
 //parse_csv(inputFile, show, 2);
 
-
-schema = db_schema(db);
-schema.truncate();
+//schema = db_schema(db);
+//schema.truncate();
 //parse_csv(inputFile, insert, 5);
 //parse_csv(inputFile, insert);
 #+END_SRC
@@ -344,7 +344,7 @@ schema.truncate();
 [ { rows: 42841 } ]
 :END:
 
-* Explorar las queries más interesantes
+* Explorar algunas consultas interesantes
 
 Me gustaría obtener la siguiente información:
 
@@ -360,80 +360,61 @@ Me gustaría obtener la siguiente información:
 En esta sección creo el objeto =query= que almacena cada una de las consultas que voy a utilizar. Además le agregué un método =rows= que devuelve un select de la tabla para cuando quiera revisar los registros individualmente.
 
 #+BEGIN_SRC js :results output raw drawer :tangle queries.js
-function table_row(cells){
-    console.log("|" + cells.join("|") + "|");
-}
-
-
-function table(rows){
-    console.log("|---|");
-    table_row(Object.keys(rows[0]));
-    console.log("|---|");
-    rows.map(row => table_row(Object.keys(row).map(k => row[k])));
-    console.log("|---|");
-}
-
-
 var query = {
-
-    rows: (limit) => {
-        return "SELECT * FROM accidentes LIMIT " + limit.toString()
+    rows: function(limit){
+        return "SELECT * FROM accidentes LIMIT " + limit.toString();
     },
 
     por_mes: 
-    ` SELECT substr(fecha, 0, 8) AS mes, count(1) AS accidentes 
+` SELECT substr(fecha, 0, 8) AS mes, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY substr(fecha, 0, 8)
 ORDER BY 1 DESC`,
 
     por_dia: 
-    ` SELECT dia, count(1) AS accidentes 
+` SELECT dia, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY dia
 ORDER BY 2 DESC`,
 
     por_hora: 
-    ` SELECT substr(fecha, 12, 2) as hora, count(1) AS accidentes 
+` SELECT substr(fecha, 12, 2) as hora, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY substr(fecha, 12, 2)
 ORDER BY 1`,
 
     por_gravedad: 
-    ` SELECT gravedad, count(1) AS accidentes 
+` SELECT gravedad, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY gravedad
 ORDER BY 2 DESC`,
 
     por_comuna: 
-    ` SELECT comuna, count(1) AS accidentes 
+` SELECT comuna, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY comuna
 ORDER BY 2 DESC`,
 
     por_barrio: 
-    ` SELECT barrio, count(1) AS accidentes 
+` SELECT barrio, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY barrio
 ORDER BY 2 DESC`,
 
     por_comuna_y_barrio: 
-    ` SELECT comuna, barrio, count(1) AS accidentes 
+` SELECT comuna, barrio, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY comuna, comuna, barrio
 ORDER BY 3 DESC`,
 
     por_diseno:
-    ` SELECT diseno, count(1) AS accidentes 
+` SELECT diseno, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY diseno
 ORDER BY 2 DESC`
-
 };
 
-module.exports = {
-    query: query,
-    table: table
-};
+module.exports = query;
 
 // const sqlite3 = require('sqlite3').verbose();
 // var db = new sqlite3.Database('database.db');
@@ -447,7 +428,7 @@ module.exports = {
 
 #+RESULTS:
 
-** Accidentes
+** Modelo
 
 En esta sección, usando el objeto =query=, creo un objeto =accidentes= que es el que se encarga de realizar efectivamente las consultas sobre la base de datos. Debido a que es un ejercicio de ejemplo no le agregué ningún tipo de control de errores. Si la query falla por algún motivo node va a devolver el error en la consola.
 
@@ -511,16 +492,16 @@ var accidentes = function(db, query){
     };
 }
 
-const q = require('/app/queries.js');
+const query = require('/app/queries.js');
 const sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('database.db');
 
-var acc = accidentes(db, q.query);
+var db = new sqlite3.Database('database.db');
+var acc = accidentes(db, query);
 
 module.exports = acc;
 
 //acc.por_dia(console.log);
-acc.rows(1, console.log);
+//acc.rows(1, console.log);
 #+END_SRC
 
 #+RESULTS:
@@ -535,17 +516,34 @@ acc.rows(1, console.log);
     diseno: 'Tramo de via' } ]
 :END:
 
-* Crear una API JSON
-** API
+*** Ver como tabla
+
+#+BEGIN_SRC js :tangle table.js
+function table_row(cells){
+    console.log("|" + cells.join("|") + "|");
+}
+
+
+function table(rows){
+    console.log("|---|");
+    table_row(Object.keys(rows[0]));
+    console.log("|---|");
+    rows.map(row => table_row(Object.keys(row).map(k => row[k])));
+    console.log("|---|");
+}
+
+module.exports = table;
+#+END_SRC
+
+* Exponer las consultas en una API JSON
 
 Para crear la API me baso en el objeto accidentes del punto anterior.
 
 #+BEGIN_SRC js :results output raw drawer :tangle api.js
 var accidentes = require("/app/accidentes.js");
-var view_as_table = require("/app/queries.js").table;
+var view_as_table = require("/app/table.js");
 
 accidentes.por_dia(view_as_table);
-
 #+END_SRC
 
 #+RESULTS:
@@ -563,8 +561,109 @@ accidentes.por_dia(view_as_table);
 |-----------+------------|
 :END:
 
+** Controlador
+
+#+BEGIN_SRC js :tangle controller.js
+var accidentes = require('/app/accidentes.js');
+
+exports.por_mes = function(req, res){
+    accidentes.por_mes(rows => res.json(rows));
+}
+
+exports.por_dia = function(req, res){
+    accidentes.por_dia(rows => res.json(rows));
+}
+
+exports.por_hora = function(req, res){
+    accidentes.por_hora(rows => res.json(rows));
+}
+
+exports.por_gravedad = function(req, res){
+    accidentes.por_gravedad(rows => res.json(rows));
+}
+
+exports.por_comuna = function(req, res){
+    accidentes.por_comuna(rows => res.json(rows));
+}
+
+exports.por_barrio = function(req, res){
+    accidentes.por_barrio(rows => res.json(rows));
+}
+
+exports.por_comuna_y_barrio = function(req, res){
+    accidentes.por_comuna_y_barrio(rows => res.json(rows));
+}
+
+exports.por_diseno = function(req, res){
+    accidentes.por_diseno(rows => res.json(rows));
+}
+#+END_SRC
+
+** Rutas
+
+#+BEGIN_SRC js :tangle routes.js
+module.exports = function(app) {
+  var accidentes = require('/app/controller.js');
+
+  app.route('/accidentes/por_mes')
+    .get(accidentes.por_mes);
+
+  app.route('/accidentes/por_dia')
+    .get(accidentes.por_dia);
+
+  app.route('/accidentes/por_hora')
+    .get(accidentes.por_hora);
+
+  app.route('/accidentes/por_gravedad')
+    .get(accidentes.por_gravedad);
+
+  app.route('/accidentes/por_comuna')
+    .get(accidentes.por_comuna);
+
+  app.route('/accidentes/por_barrio')
+    .get(accidentes.por_barrio);
+
+  app.route('/accidentes/por_comuna_y_barrio')
+    .get(accidentes.por_comuna_y_barrio);
+
+  app.route('/accidentes/por_diseno')
+    .get(accidentes.por_diseno);
+
+};
+#+END_SRC
+
+** Servidor
+
+#+BEGIN_SRC js :tangle server.js
+var express = require('express');
+var app = express();
+var port = process.env.PORT || 3000;
+var routes = require('/app/routes.js');
+routes(app);
+
+app.use(function(req, res) {
+  res.status(404).send({url: req.originalUrl + ' not found'})
+});
+
+app.listen(port, '0.0.0.0');
+
+console.log('Web server started on: ' + port);
+#+END_SRC
+
+** Testing
+
+Abrir [[http://localhost:3000/accidentes/por_dia]]
+
+#+BEGIN_SRC sh :results output raw drawer
+curl http://localhost:3000/accidentes/por_dia
+#+END_SRC
+
+#+RESULTS:
+:RESULTS:
+[{"dia":"VIERNES","accidentes":6916},{"dia":"MARTES","accidentes":6557},{"dia":"JUEVES","accidentes":6546},{"dia":"MIÉRCOLES","accidentes":6453},{"dia":"SÁBADO","accidentes":6274},{"dia":"LUNES","accidentes":6109},{"dia":"DOMINGO","accidentes":3986}]
+:END:
+
 * Hacer una página mínima con resultados
-** Rutas estáticas
 ** Index HTML
 ** Accidentes por comuna y barrio
 * Putting it all together
