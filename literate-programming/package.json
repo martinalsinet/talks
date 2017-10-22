@@ -1,10 +1,10 @@
 {
-  "name": "Literate Programming",
+  "name": "literate-programming",
   "version": "0.1.0",
   "description": "Literate Programming en Javascript",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "npm start"
+    "start": "node src/server.js"
   },
   "author": "Martín Alsinet",
   "license": "CC"

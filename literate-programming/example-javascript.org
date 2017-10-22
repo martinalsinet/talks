@@ -9,28 +9,60 @@
 
 En este documento vamos a explorar las técnicas de Literate Programming con un ejemplo práctico en Javascript.
 
-La idea es analizar un archivo de estadísticas de accidentes en la ciudad de Medellín y armar una página sencilla con los resultados más interesantes.
+El objetivo del ejemplo es analizar un archivo de estadísticas de accidentes en la ciudad de Medellín y armar una página sencilla con los resultados más interesantes.
+
+*** Disclaimer
+
+Este es un ejercicio a modo de ejemplo y el código no representa en absoluto las mejores prácticas respecto de seguridad o control de errores. 
+
+Más claro: *No copiar y pegar fragmentos del código en una aplicación productiva.*
 
 * Setup
-** Package.json
+** TODO Inicializar carpetas
+
+Vamos a guardar el código fuente de la aplicación en la carpeta =src=. Debido a que utilizamos =org-babel-tangle= para generar los archivos .js a partir de este documento, no es necesario que la carpeta sea registrada en el repositorio.
+
+Para comenzar desde cero borramos las carpetas =node_modules=, =src=, y el archivo que vamos a usar como base de datos (=database.db=).
+
+#+BEGIN_SRC sh :results output drawer
+#rm -Rf ./node_modules
+#rm -Rf ./src
+#rm ./database.db
+#mkdir -p src
+#ls
+cat .gitignore
+#+END_SRC
+
+#+RESULTS:
+:RESULTS:
+node_modules
+database.db
+*.tex
+*.pdf
+*.js
+*.html
+src
+:END:
+
+** TODO Generar package.json
 
 Generamos un =package.json= mínimo para comenzar el proyecto
 
 #+BEGIN_SRC js :tangle package.json
 {
-  "name": "Literate Programming",
+  "name": "literate-programming",
   "version": "0.1.0",
   "description": "Literate Programming en Javascript",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "npm start"
+    "start": "node src/server.js"
   },
   "author": "Martín Alsinet",
   "license": "CC"
 }
 #+END_SRC
 
-** Instalar dependencias
+** TODO Instalar dependencias
 
 Vamos a usar las siguientes dependencias
 
@@ -55,22 +87,24 @@ added 111 packages, removed 131 packages and updated 3 packages in 19.627s
 :END:
 
 * Fuente de datos
-** Origen
+** TODO Origen
 
 La fuente de los datos que vamos a usar es la iniciativa de Open Data de la Alcaldía de Medellín, que pone a disposición [[https://geomedellin-m-medellin.opendata.arcgis.com/datasets/a65c3aff0ef34973a2441b6cd0fbc24a_8][las estadísticas de accidentes de tránsito del año 2016]]
 
-** Formato
+** TODO Formato
 
 El formato de los datos es un archivo CSV, veamos qué tiene adentro
 
-#+BEGIN_SRC sh
-ls Accidentalidad_2016.csv
+#+BEGIN_SRC sh :results output drawer
+ls *.csv
 #+END_SRC
 
 #+RESULTS:
-: Accidentalidad_2016.csv
+:RESULTS:
+Accidentalidad_2016.csv
+:END:
 
-** ¿Qué columnas me interesan?
+** TODO ¿Qué columnas me interesan?
 
 Seleccioné las siguientes columnas para extraer del archivo:
 
@@ -89,7 +123,7 @@ La fecha y la hora están en dos campos separados, vamos a fusionarlas en uno so
 Aparentemente hay una ubicación geográfica, porque están los campos =X= e =Y=, pero no son campos de latitud y longitud sino que la ubicación está en formato ARCGIS. Para no complicar el ejemplo, no vamos a utilizar las coordenadas.
 
 * Importar CSV a una base sqlite
-** Parsear CSV
+** TODO Parsear CSV
 
    Para parsear el archivo usamos el módulo =csv-parse= que permite leer un archivo y pasarle una función que recibe un array de objetos con un registro por cada fila.
 
@@ -141,16 +175,16 @@ module.exports = parse_csv;
     diseno: 'Tramo de via' } ]
 :END:
 
-** Crear Schema
+** TODO Crear Schema
 
-En este caso creo un objeto =schema= que me permite realizar algunas operaciones de mantenimiento de la base de datos. Uso estas operaciones para verificar el funcionamiento del proceso de inserción.
+Ahora creo un objeto =schema= que me permite realizar algunas operaciones de mantenimiento de la base de datos. Uso estas operaciones para verificar el funcionamiento del proceso de inserción.
 
 Los métodos del objeto =schema= son:
 
 - create :: Crea la tabla =accidentes= ejecutando la query =schema_q=
 - truncate :: Borra todos los registros de la tabla =accidentes=
 - rows :: Ejecuta un =SELECT= de la tabla =accidentes= e imprime todos los registros de la tabla con =console.log=
-- count :: Ejecuta un =SELECT count(1)= de la tabla =accidentes= e imprime el resutlado con =console.log=
+- count :: Ejecuta un =SELECT count(1)= de la tabla =accidentes= e imprime el resultado con =console.log=
 
 #+BEGIN_SRC js :results output drawer :tangle src/schema.js
 var schema_q = `CREATE TABLE IF NOT EXISTS accidentes (
@@ -169,26 +203,26 @@ var schema = function(db) {
     return {
         create: function(){
             db.serialize(function() {
-                db.run("drop table if exists accidentes");
+                db.run("DROP TABLE IF EXISTS accidentes");
                 db.run(schema_q);
             });
         },
         truncate: function(){
             db.serialize(function() {
-                db.run("begin transaction");
-                db.run("delete from accidentes");
-                db.run("commit");
+                db.run("BEGIN TRANSACTION");
+                db.run("DELETE FROM accidentes");
+                db.run("COMMIT");
             });
         },
         rows: function(){
             db.all(
-                "select * from accidentes", 
+                "SELECT * FROM accidentes", 
                 (err, records) => console.log(records)
             );
         },
         count: function(){
             db.all(
-                "select count(1) as rows from accidentes", 
+                "SELECT COUNT(1) AS rows FROM accidentes", 
                 (err, records) => console.log(records)
             );
         }
@@ -209,7 +243,7 @@ module.exports = schema;
 []
 :END:
 
-** Insertar registros
+** TODO Insertar registros
 
 Para insertar los datos parseados uso la función =insert= definida más abajo que ejecuta la query =insert_q= para cada fila del archivo original. Los inserts se ejecutan dentro de una transacción en un entorno serializado, lo que asegura los datos se inserten en secuencia. Luego del commit de la tranasacción se llama a una función =finished= que indica que se ha terminado de procesar los datos.
 
@@ -355,7 +389,7 @@ Me gustaría obtener la siguiente información:
 - Cantidad de accidentes por comuna y barrio
 - Cantidad de accidentes por lugar
 
-** Queries
+** TODO Queries
 
 En esta sección creo el objeto =query= que almacena cada una de las consultas que voy a utilizar. Además le agregué un método =rows= que devuelve un select de la tabla para cuando quiera revisar los registros individualmente.
 
@@ -369,13 +403,13 @@ var query = {
 ` SELECT substr(fecha, 0, 8) AS mes, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY substr(fecha, 0, 8)
-ORDER BY 1 DESC`,
+ORDER BY 1`,
 
     por_dia: 
 ` SELECT dia, count(1) AS accidentes 
     FROM accidentes 
 GROUP BY dia
-ORDER BY 2 DESC`,
+ORDER BY 2`,
 
     por_hora: 
 ` SELECT substr(fecha, 12, 2) as hora, count(1) AS accidentes 
@@ -416,10 +450,11 @@ ORDER BY 2 DESC`
 
 module.exports = query;
 
+// const table = require('/app/src/table.js');
 // const sqlite3 = require('sqlite3').verbose();
 // var db = new sqlite3.Database('database.db');
 // db.all(
-//     query.por_dia, 
+//     query.por_mes, 
 //     //(err, rows) => console.log(rows)
 //     (err, rows) => table(rows)
 // );
@@ -427,8 +462,10 @@ module.exports = query;
 #+END_SRC
 
 #+RESULTS:
+:RESULTS:
+:END:
 
-** Modelo
+** TODO Modelo
 
 En esta sección, usando el objeto =query=, creo un objeto =accidentes= que es el que se encarga de realizar efectivamente las consultas sobre la base de datos. Debido a que es un ejercicio de ejemplo no le agregué ningún tipo de control de errores. Si la query falla por algún motivo node va a devolver el error en la consola.
 
@@ -561,7 +598,7 @@ accidentes.por_dia(view_as_table);
 |-----------+------------|
 :END:
 
-** Controlador
+** TODO Controlador
 
 Creo un controlador que agrega métodos para exponer las consultas.
 
@@ -601,7 +638,7 @@ exports.por_diseno = function(req, res){
 }
 #+END_SRC
 
-** Rutas
+** TODO Rutas
 
 #+BEGIN_SRC js :tangle src/routes.js
 module.exports = function(app) {
@@ -634,7 +671,7 @@ module.exports = function(app) {
 };
 #+END_SRC
 
-** Servidor
+** TODO Servidor
 
 #+BEGIN_SRC js :tangle src/server.js
 var express = require('express');
@@ -653,7 +690,7 @@ app.use(function(req, res) {
 
 app.listen(port, '0.0.0.0');
 
-// exit with ctrl-c
+// exit with ctrl-c when started standalone
 process.on('SIGINT', function() {
     console.log(": Caught interrupt signal, exiting...");
     process.exit();
@@ -662,9 +699,15 @@ process.on('SIGINT', function() {
 console.log('Web server started on: ' + port);
 #+END_SRC
 
-** Testing
+** TODO HTTP test
 
-Abrir [[http://localhost:3000/accidentes/por_dia]]
+Para verificar el funcionamiento de la API primero hay que ejecutar en una consola el comando =node src/server.js=, que lanza el servidor e inicia la aplicación.
+
+Luego visitar con un navegador el siguiente url:
+
+-  [[http://localhost:3000/accidentes/por_dia]]
+
+O sino, ejecutar el siguiente bloque de código con =C-c C-c=
 
 #+BEGIN_SRC sh :results output raw drawer
 curl http://localhost:3000/accidentes/por_dia
@@ -676,7 +719,16 @@ curl http://localhost:3000/accidentes/por_dia
 :END:
 
 * Hacer una página mínima con resultados
-** Index HTML
+
+  La página muestra las estadísticas en forma gráfica, consultando la API JSON.
+
+  Utilizo las siguientes bibliotecas:
+
+- [[https://purecss.io][Pure CSS]] :: Para los estilos y layout
+- [[http://jquery.com][jQuery]] :: Para hacer las peticiones AJAX
+- [[http://chartjs.org][Chart.js]] :: Para generar los gráficos
+
+** TODO index.html
 
 #+BEGIN_SRC html :tangle src/index.html
 <!DOCTYPE HTML>
@@ -688,24 +740,143 @@ curl http://localhost:3000/accidentes/por_dia
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="description" content="" />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="https://cdnjs.com/libraries/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"/>
   </head>
   <body>
     <h1>Accidentes en Medellín - Año 2016</h1>
     <div class="pure-g">
-      <div class="pure-u-1-2">
-        <h2>Por mes</h2>
-        <h2>Por día</h2>
-        <h2>Por hora</h2>
+      <div class="pure-u-1-3">
+        <div class="chart">
+          <canvas id="chart-por-mes" width="400" height="400">
+          </canvas>
+        </div>
+
+        <div class="chart">
+          <canvas id="chart-por-dia" width="400" height="400">
+          </canvas>
+        </div>
       </div>
 
-      <div class="pure-u-1-2">
-        <h2>Por Comuna</h2>
-        <h2>Por Barrio</h2>
-        <h2>Por Lugar</h2>
+      <div class="pure-u-1-3">
+        <div class="chart">
+          <canvas id="chart-por-hora" width="400" height="400">
+          </canvas>
+        </div>
+
+        <div class="chart">
+          <canvas id="chart-por-gravedad" width="400" height="400">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="pure-u-1-3">
+        <div class="chart">
+          <canvas id="chart-por-comuna" width="400" height="400">
+          </canvas>
+        </div>
+
+        <div class="chart">
+          <canvas id="chart-por-lugar" width="400" height="400">
+          </canvas>
+        </div>
       </div>
     </div>
+
+    <style>
+     h1 {
+       text-align: center;
+     }
+     div.chart {
+       border: 1px solid;
+       padding: 1em;
+     }
+    </style>
+
+    <script>
+     function random_color()
+     {
+         return color = [
+             Math.round(Math.random()*256),
+             Math.round(Math.random()*256),
+             Math.round(Math.random()*256)
+         ];
+     }
+
+     function rgba(rgb, alpha){
+         return "rgba(" + rgb.join(", ") + ", " + alpha + ")";
+     }
+
+     function makeChart(type, title, selector, labels, records){
+         var colors = records.map(x => random_color());
+         var chart = new Chart(selector, {
+             type: type,
+             data: {
+                 labels: labels,
+                 datasets: [{
+                     label: title,
+                     data: records,
+                     backgroundColor: colors.map(col => rgba(col, 0.5)),
+                     borderColor: colors.map(col => rgba(col, 1)),
+                     borderWidth: 1
+                 }]
+             },
+             options: {}
+         });
+     }
+
+     $(document).ready(function(){
+
+         $.get("/accidentes/por_mes", function(data){
+             labels = data.map(row => row.mes);
+             records = data.map(row => row.accidentes);
+             makeChart(
+                 "bar", "Accidentes por Mes", "chart-por-mes", labels, records
+             );
+         });
+
+         $.get("/accidentes/por_dia", function(data){
+             labels = data.map(row => row.dia);
+             records = data.map(row => row.accidentes);
+             makeChart(
+                 "bar", "Accidentes por Día", "chart-por-dia", labels, records
+             );
+         });
+
+         $.get("/accidentes/por_hora", function(data){
+             labels = data.map(row => row.hora);
+             records = data.map(row => row.accidentes);
+             makeChart(
+                 "bar", "Accidentes por Hora", "chart-por-hora", labels, records
+             );
+         });
+
+         $.get("/accidentes/por_gravedad", function(data){
+             labels = data.map(row => row.gravedad);
+             records = data.map(row => row.accidentes);
+             makeChart(
+                 "doughnut", "Accidentes por Gravedad", "chart-por-gravedad", labels, records
+             );
+         });
+
+         $.get("/accidentes/por_comuna", function(data){
+             labels = data.map(row => row.comuna);
+             records = data.map(row => row.accidentes);
+             makeChart(
+                 "doughnut", "Accidentes por Comuna", "chart-por-comuna", labels, records
+             );
+         });
+
+         $.get("/accidentes/por_diseno", function(data){
+             labels = data.map(row => row.diseno);
+             records = data.map(row => row.accidentes);
+             makeChart(
+                 "doughnut", "Accidentes por Lugar", "chart-por-lugar", labels, records
+             );
+         });
+
+     });
+    </script>
 
   </body>
 </html>
