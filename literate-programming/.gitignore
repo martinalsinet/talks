@@ -5,3 +5,4 @@ database.db
 *.js
 *.html
 src
+build

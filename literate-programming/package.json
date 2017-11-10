@@ -1,7 +1,7 @@
 {
-  "name": "literate-programming",
+  "name": "literate-programming-example",
   "version": "0.1.0",
-  "description": "Literate Programming en Javascript",
+  "description": "Ejemplo de Literate Programming en Javascript",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js"

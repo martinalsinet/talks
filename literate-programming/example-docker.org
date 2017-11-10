@@ -1,5 +1,5 @@
 
-#+TITLE: Ejemplo de Literate Programming: Docker Images
+#+TITLE: Literate Docker Images
 #+AUTHOR: Martín Alsinet
 #+DATE: 2017
 #+OPTIONS: toc:nil ':t num:nil
@@ -66,10 +66,10 @@ cp ./build/bin/* ~/bin
 
 Las imágenes de PHP se generan a partir de las imágenes oficiales, a las que les hago las siguientes modificaciones:
 
-- *apache*: =mod_rewrite= activado
-- *$PATH*: se agrega =/var/www/vendor/bin= (carpeta con comandos instalados por composer)
-- *bash*: se crea un alias para ll y se configura la variable de entorno =$SHELL=
-- *extensiones de PHP*:
+- apache :: =mod_rewrite= activado
+- $PATH :: se agrega =/var/www/vendor/bin= (carpeta con comandos instalados por composer)
+- bash :: se crea un alias para ll y se configura la variable de entorno =$SHELL=
+- extensiones de PHP ::
   + =pdo=
   + =pdo_mysql=
   + =pdo_pgsql=
@@ -134,10 +134,10 @@ CMD ["composer"]
 
 Las imágenes de python se crean a partir de las imágenes oficiales, con los siguientes agregados:
 
-- *pip*: upgrade a versión 9 (por defecto viene con la 8.1.2)
-- *pew*: el paquete pew es un reemplazo de virtualenvwrapper y se utiliza para generar un entorno virtual en el cual poder ejecutar nuestra aplicación de manera aislada de la instalación de python del sistema. 
-- *bpython*: el paquete bpython es una consola para inspeccionar y ejecutar código de manera interactiva con autocomplete y syntax highlighting.
-- *bash*: se crea un alias para ll y se configura la variable de entorno =$SHELL=
+- pip :: upgrade a versión 9 (por defecto viene con la 8.1.2)
+- pew :: el paquete pew es un reemplazo de virtualenvwrapper y se utiliza para generar un entorno virtual en el cual poder ejecutar nuestra aplicación de manera aislada de la instalación de python del sistema. 
+- bpython :: el paquete bpython es una consola para inspeccionar y ejecutar código de manera interactiva con autocomplete y syntax highlighting.
+- bash :: se crea un alias para ll y se configura la variable de entorno =$SHELL=
 
 **** version-2.7
 
@@ -459,6 +459,7 @@ docker run --rm \
            -e "PYTHONPATH=/app/vendor" \
            malsinet/python:3.6 pip $@
 #+END_SRC
+
 *** bpython-3.6
 
 #+BEGIN_SRC sh :exports code :padline no :tangle build/bin/bpython-3.6
@@ -654,6 +655,7 @@ docker run --rm -ti \
            -p 8080:8080 \
            malsinet/eve
 #+END_SRC
+
 ** lein
 
 #+BEGIN_SRC sh :exports code :padline no :tangle build/bin/lein
@@ -664,3 +666,4 @@ docker run --rm \
            -p 8080:8080 \
            clojure lein $@
 #+END_SRC
+

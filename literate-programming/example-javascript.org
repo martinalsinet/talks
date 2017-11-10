@@ -7,11 +7,11 @@
 
 * Introducción
 
-En este documento vamos a explorar las técnicas de Literate Programming con un ejemplo práctico en Javascript.
+  En este documento vamos a explorar las técnicas de Literate Programming con un ejemplo práctico en Javascript.
 
-El objetivo del ejemplo es analizar un archivo de estadísticas de accidentes en la ciudad de Medellín y armar una página sencilla con los resultados más interesantes.
+  El objetivo del ejemplo es analizar un archivo de estadísticas de accidentes en la ciudad de Medellín y armar una página sencilla con los resultados más interesantes.
 
-*** Disclaimer
+** Disclaimer
 
 Este es un ejercicio a modo de ejemplo y el código no representa en absoluto las mejores prácticas respecto de seguridad o control de errores. 
 
@@ -25,24 +25,11 @@ Vamos a guardar el código fuente de la aplicación en la carpeta =src=. Debido 
 Para comenzar desde cero borramos las carpetas =node_modules=, =src=, y el archivo que vamos a usar como base de datos (=database.db=).
 
 #+BEGIN_SRC sh :results output drawer
-#rm -Rf ./node_modules
-#rm -Rf ./src
-#rm ./database.db
+#rm -Rf ./node_modules ./src ./database.db
 #mkdir -p src
-#ls
-cat .gitignore
+#ls -l
+#cat .gitignore
 #+END_SRC
-
-#+RESULTS:
-:RESULTS:
-node_modules
-database.db
-*.tex
-*.pdf
-*.js
-*.html
-src
-:END:
 
 ** TODO Generar package.json
 
@@ -50,9 +37,9 @@ Generamos un =package.json= mínimo para comenzar el proyecto
 
 #+BEGIN_SRC js :tangle package.json
 {
-  "name": "literate-programming",
+  "name": "literate-programming-example",
   "version": "0.1.0",
-  "description": "Literate Programming en Javascript",
+  "description": "Ejemplo de Literate Programming en Javascript",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js"
@@ -62,9 +49,9 @@ Generamos un =package.json= mínimo para comenzar el proyecto
 }
 #+END_SRC
 
-** TODO Instalar dependencias
+** Instalar dependencias
 
-Vamos a usar las siguientes dependencias
+Vamos a necesitar las siguientes dependencias
 
 - sqlite :: Base de datos en un archivo
 - csv-parse  :: Parser de archivos CSV
@@ -73,18 +60,6 @@ Vamos a usar las siguientes dependencias
 #+BEGIN_SRC sh :results output drawer
 npm install sqlite3 csv-parse express
 #+END_SRC
-
-#+RESULTS:
-:RESULTS:
-
-> sqlite3@3.1.13 install /app/node_modules/sqlite3
-> node-pre-gyp install --fallback-to-build
-
-[sqlite3] Success: "/app/node_modules/sqlite3/lib/binding/node-v57-linux-x64/node_sqlite3.node" is installed via remote
-+ lazy@1.0.11
-+ sqlite3@3.1.13
-added 111 packages, removed 131 packages and updated 3 packages in 19.627s
-:END:
 
 * Fuente de datos
 ** TODO Origen
@@ -95,14 +70,7 @@ La fuente de los datos que vamos a usar es la iniciativa de Open Data de la Alca
 
 El formato de los datos es un archivo CSV, veamos qué tiene adentro
 
-#+BEGIN_SRC sh :results output drawer
-ls *.csv
-#+END_SRC
-
-#+RESULTS:
-:RESULTS:
-Accidentalidad_2016.csv
-:END:
+ls
 
 ** TODO ¿Qué columnas me interesan?
 
@@ -151,29 +119,9 @@ parse_csv = function(filename, fn, limit){
 }
 
 module.exports = parse_csv;
+
 //parse_csv('Accidentalidad_2016.csv', console.log, 2);
 #+END_SRC
-
-#+RESULTS:
-:RESULTS:
-[ { objectid: '260034',
-    x: '833887.52',
-    y: '1179103.47',
-    radicado: '1520771',
-    fecha: '2016-01-29T00:00:00.000Z',
-    hora: '06:50 AM',
-    dia: 'VIERNES',
-    periodo: '2016',
-    clase: 'Choque',
-    direccion: 'CR 50 CL 8',
-    direccion_enc: 'CR  050   008  000 00000',
-    cbml: '1507',
-    tipo_geocod: 'Malla vial',
-    gravedad: 'HERIDO',
-    barrio: 'Campo Amor',
-    comuna: 'Guayabal',
-    diseno: 'Tramo de via' } ]
-:END:
 
 ** TODO Crear Schema
 
@@ -214,9 +162,9 @@ var schema = function(db) {
                 db.run("COMMIT");
             });
         },
-        rows: function(){
+        rows: function(limit){
             db.all(
-                "SELECT * FROM accidentes", 
+                "SELECT * FROM accidentes LIMIT " + limit, 
                 (err, records) => console.log(records)
             );
         },
@@ -234,20 +182,15 @@ module.exports = schema;
 //const sqlite3 = require('sqlite3').verbose();
 //var s = schema(new sqlite3.Database('database.db'));
 //s.create();
-//s.rows();
+//s.rows(3);
 //s.count();
 #+END_SRC
-
-#+RESULTS:
-:RESULTS:
-[]
-:END:
 
 ** TODO Insertar registros
 
 Para insertar los datos parseados uso la función =insert= definida más abajo que ejecuta la query =insert_q= para cada fila del archivo original. Los inserts se ejecutan dentro de una transacción en un entorno serializado, lo que asegura los datos se inserten en secuencia. Luego del commit de la tranasacción se llama a una función =finished= que indica que se ha terminado de procesar los datos.
 
-Antes de insertar cada registro uso la función =fix_date= que fusiona los dos campos =fecha= y =hora= en un solo campo fecha con toda la información. Además le cambia el formato a la hora, dado que en el archivo original se encuentra en formato AM/PM y eso complica las consultas.
+Antes de insertar cada registro uso la función =fix_date= que fusiona los dos campos =fecha= y =hora= en un solo campo =fecha= con toda la información. Además le cambia el formato a la hora, dado que en el archivo original se encuentra en formato AM/PM y eso complica las consultas.
 
 Las funciones show_X las uso solamente para poder mostrar cómo se van modificando los datos, desde el parseo original, pasando por las correcciones de la fecha y luego la query resultante que se va a ejecutar.
 
@@ -371,12 +314,8 @@ var db = new sqlite3.Database('database.db');
 //schema.truncate();
 //parse_csv(inputFile, insert, 5);
 //parse_csv(inputFile, insert);
+//schema.count();
 #+END_SRC
-
-#+RESULTS:
-:RESULTS:
-[ { rows: 42841 } ]
-:END:
 
 * Explorar algunas consultas interesantes
 
@@ -396,7 +335,7 @@ En esta sección creo el objeto =query= que almacena cada una de las consultas q
 #+BEGIN_SRC js :results output raw drawer :tangle src/queries.js
 var query = {
     rows: function(limit){
-        return "SELECT * FROM accidentes LIMIT " + limit.toString();
+        return "SELECT * FROM accidentes LIMIT " + limit;
     },
 
     por_mes: 
@@ -452,18 +391,13 @@ module.exports = query;
 
 // const table = require('/app/src/table.js');
 // const sqlite3 = require('sqlite3').verbose();
-// var db = new sqlite3.Database('database.db');
+//p var db = new sqlite3.Database('database.db');
 // db.all(
-//     query.por_mes, 
-//     //(err, rows) => console.log(rows)
-//     (err, rows) => table(rows)
+//       query.por_dia, 
+//       (err, rows) => console.log(rows)
+//      //(err, rows) => table(rows)
 // );
-
 #+END_SRC
-
-#+RESULTS:
-:RESULTS:
-:END:
 
 ** TODO Modelo
 
@@ -537,21 +471,9 @@ var acc = accidentes(db, query);
 
 module.exports = acc;
 
-//acc.por_dia(console.log);
-//acc.rows(1, console.log);
+//acc.por_comuna(console.log);
+//acc.rows(4, console.log);
 #+END_SRC
-
-#+RESULTS:
-:RESULTS:
-[ { id: 260034,
-    fecha: '2016-01-29 06:50',
-    dia: 'VIERNES',
-    clase: 'Choque',
-    gravedad: 'HERIDO',
-    barrio: 'Campo Amor',
-    comuna: 'Guayabal',
-    diseno: 'Tramo de via' } ]
-:END:
 
 *** Ver como tabla
 
@@ -580,23 +502,8 @@ Para crear la API me baso en el objeto accidentes del punto anterior.
 var accidentes = require("/app/src/accidentes.js");
 var view_as_table = require("/app/src/table.js");
 
-accidentes.por_dia(view_as_table);
+accidentes.por_hora(view_as_table);
 #+END_SRC
-
-#+RESULTS:
-:RESULTS:
-|-----------+------------|
-| dia       | accidentes |
-|-----------+------------|
-| VIERNES   |       6916 |
-| MARTES    |       6557 |
-| JUEVES    |       6546 |
-| MIÉRCOLES |       6453 |
-| SÁBADO    |       6274 |
-| LUNES     |       6109 |
-| DOMINGO   |       3986 |
-|-----------+------------|
-:END:
 
 ** TODO Controlador
 
@@ -673,6 +580,8 @@ module.exports = function(app) {
 
 ** TODO Servidor
 
+En esta sección creamos el servidor que va a ser responsable por la API REST y la página que muestra las estadísticas. Va a escuchar en el puerto *3000* y lo iniciamos con el comando =node src/server.js=, o sino con =npm start=.
+
 #+BEGIN_SRC js :tangle src/server.js
 var express = require('express');
 var app = express();
@@ -713,11 +622,6 @@ O sino, ejecutar el siguiente bloque de código con =C-c C-c=
 curl http://localhost:3000/accidentes/por_dia
 #+END_SRC
 
-#+RESULTS:
-:RESULTS:
-[{"dia":"VIERNES","accidentes":6916},{"dia":"MARTES","accidentes":6557},{"dia":"JUEVES","accidentes":6546},{"dia":"MIÉRCOLES","accidentes":6453},{"dia":"SÁBADO","accidentes":6274},{"dia":"LUNES","accidentes":6109},{"dia":"DOMINGO","accidentes":3986}]
-:END:
-
 * Hacer una página mínima con resultados
 
   La página muestra las estadísticas en forma gráfica, consultando la API JSON.
@@ -727,6 +631,8 @@ curl http://localhost:3000/accidentes/por_dia
 - [[https://purecss.io][Pure CSS]] :: Para los estilos y layout
 - [[http://jquery.com][jQuery]] :: Para hacer las peticiones AJAX
 - [[http://chartjs.org][Chart.js]] :: Para generar los gráficos
+
+Abrimos un navegador en [[http://localhost:3000/]]
 
 ** TODO index.html
 
@@ -880,5 +786,26 @@ curl http://localhost:3000/accidentes/por_dia
 
   </body>
 </html>
+#+END_SRC
+
+** TODO La Yapa: export
+*** HTML
+
+#+BEGIN_SRC text
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+#+HTML_HEAD: <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+#+HTML_HEAD: <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="http://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
+#+HTML_HEAD: <style type="text/css">pre {background-color: #ddd}</style>
+#+End_SRC text
+
+*** PDF
+
+#+BEGIN_SRC text
+#+LaTeX_HEADER: \usemintedstyle{default}
+#+LaTeX_HEADER: \usepackage{xcolor}
+#+LaTeX_HEADER: \definecolor{bg}{rgb}{0.95,0.95,0.95}
 #+END_SRC
 
