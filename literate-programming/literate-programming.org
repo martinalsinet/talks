@@ -1,7 +1,7 @@
 
 #+TITLE: Literate Programming en Javascript
 #+AUTHOR: Martín Alsinet
-#+DATE: 2017
+#+DATE: 2018
 #+OPTIONS: toc:nil ':t num:nil
 #+LANGUAGE: es
 
@@ -42,6 +42,7 @@
                martin@alsinet.com.ar
 
 * Agenda 
+
 
   - Definición
 
@@ -143,7 +144,7 @@
 
 
 
-https://github.com/malsinet/talks/literate-programming
+https://github.com/martinalsinet/talks
   
 * Feedback  
 ** Luis
