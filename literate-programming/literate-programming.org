@@ -5,16 +5,16 @@
 #+OPTIONS: toc:nil ':t num:nil
 #+LANGUAGE: es
 
-#+BEGIN_SRC emacs-lisp
-;; Presentation settings
-;;(getenv "PATH")
-;;(setenv "PATH" (concat (getenv "PATH") ":~/bin"))
+#+BEGIN_SRC emacs-lisp :results silent
+(blink-cursor-mode 0)
 (org-bullets-mode)
 (org-indent-mode)
-(blink-cursor-mode 0)
 (switch-theme 'leuven)
 (setq mode-line-format nil)
 (setq cursor-type nil)
+#+END_SRC
+#+BEGIN_SRC emacs-lisp :results silent
+(setq cursor-type t)
 (setq mode-line-format 
       '("%e" 
         mode-line-front-space 
@@ -26,7 +26,9 @@
         mode-line-position 
         (vc-mode vc-mode) "  " 
         mode-line-modes mode-line-misc-info mode-line-end-spaces))
-(setq cursor-type t)
+(switch-theme 'zenburn)
+(org-indent-mode 0)
+(org-bullets-mode 0)
 #+END_SRC
 
 * Presentación 
@@ -76,7 +78,7 @@
 
 * Ventajas y Desventajas
 
-  *Ventajas*
+*Ventajas*
 
 - Permite centralizar código y documentación en un solo archivo fácil de navegar
 
@@ -101,7 +103,7 @@
 
 - Reproducible research, exploratory programming, ML, POC
 
-* Emacs y Org-Mode 
+* Herramientas: Emacs y Org-Mode 
 
 
 - *Emacs*
@@ -112,14 +114,14 @@
   Es una especie de Markdown mejorado con hooks para ejecutar código
 
 
- No tengan miedo, *no es obligatorio usar Emacs*....
+ No tengan miedo, *no es obligatorio usar Emacs*...
 
-* Alternativas a Emacs 
+* Herramientas: Alternativas a Emacs 
 
 
 - *Coffeescript*
   - http://coffeescript.org/#literate 
-  - [[http://cl.ly/LxEu][Code example]]
+  - [[http://ashkenas.com/docco/][Code example]] / [[https://github.com/jashkenas/docco/blob/master/docco.litcoffee][Github source]]
 
 
 - *Jupyter Notebooks*
@@ -160,9 +162,9 @@ investigar... html media overlay .smil
 
 ** Julián 
 
-   - [ ] detallar experiencia en presentación
-   - [ ] contradicción? no nos gusta documentar, entonces no me sirve?
-   - [X] eliminar ejemplo de docker...
-   - [ ] aclarar el objetivo, para que la gente "vea" adonde vamos...
-   - [ ] motivación de knuth
+- [ ] detallar experiencia en presentación
+- [X] contradicción? no nos gusta documentar, entonces no me sirve?
+- [X] eliminar ejemplo de docker...
+- [X] aclarar el objetivo, para que la gente "vea" adonde vamos...
+- [ ] motivación de knuth
 
