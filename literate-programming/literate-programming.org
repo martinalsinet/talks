@@ -48,6 +48,8 @@
 
   - El Problema
 
+  - En qué consiste Literate Programming
+
   - Ventajas y Desventajas
 
   - Cuándo conviene usarlo
@@ -75,7 +77,20 @@
 - La documentación siempre queda desactualizada respecto del código
 
 
-- No nos gusta documentar. ¿Interactividad?
+- A los programadores no nos gusta documentar. ¿Falta de interactividad?
+
+* ¿En qué consiste Literate Programming?
+
+
+Consiste en cambiar el enfoque tradicional centrado en el código fuente por un enfoque centrado en la documentación.
+
+
+
+            Código Fuente + Comentarios
+
+                        vs
+
+            Comentarios + Código Fuente
 
 * Ventajas y Desventajas
 
@@ -163,7 +178,7 @@ investigar... html media overlay .smil
 
 ** Julián 
 
-- [ ] detallar experiencia en presentación
+- [X] detallar experiencia en presentación
 - [X] contradicción? no nos gusta documentar, entonces no me sirve?
 - [X] eliminar ejemplo de docker...
 - [X] aclarar el objetivo, para que la gente "vea" adonde vamos...

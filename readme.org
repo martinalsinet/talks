@@ -1,0 +1,14 @@
+#+TITLE: Mis Charlas
+#+AUTHOR: Martín Alsinet
+#+DATE: 2018
+#+OPTIONS: toc:nil ':t num:nil
+#+LANGUAGE: en
+
+|------------------------------------+-------+--------|
+| Charla                             | Dónde | Cuándo |
+|------------------------------------+-------+--------|
+| [[./literate-programming/literate-programming.org][Literate Programming en Javascript]] | TBD   | TBD    |
+|------------------------------------+-------+--------|
+
+
+
