@@ -107,7 +107,7 @@ Consiste en cambiar el enfoque tradicional centrado en el código fuente por un 
 
 - Ver punto anterior
 
-* ¿Cuándo conviene usarlo? 
+* ¿Cuándo conviene aplicarlo? 
 
 
  Cuando se tienen procedimientos o secuencias de pasos complejas que requieren mucho trabajo para hacerlas funcionar y que luego de logradas se dejan sin modificar durante mucho tiempo (y generalmente se olvidan)
@@ -137,17 +137,16 @@ Consiste en cambiar el enfoque tradicional centrado en el código fuente por un 
 
 - *Coffeescript*
   - http://coffeescript.org/#literate 
-  - [[http://ashkenas.com/docco/][Code example]] / [[https://github.com/jashkenas/docco/blob/master/docco.litcoffee][Github source]]
-
+  - [[http://ashkenas.com/docco/][Ejemplo de código]] / [[https://github.com/jashkenas/docco/blob/master/docco.litcoffee][Archivo @ Github]]
 
 - *Jupyter Notebooks*
   - https://try.jupyter.org/
-  - [[https://github.com/srcolinas/Machine_Learning_basico/blob/master/regresion_lineal.ipynb][Machine Learning example]]
+  - [[https://github.com/srcolinas/Machine_Learning_basico/blob/master/regresion_lineal.ipynb][Ejemplo de Machine Learning]]
 
 
 - *Eve*
   - http://play.witheve.com
-  - [[http://play.witheve.com/#/examples/flappy.eve][Flappy Bird example]]
+  - [[http://play.witheve.com/#/examples/flappy.eve][Ejemplo de Flappy Bird]]
 
 * Demo 
 
