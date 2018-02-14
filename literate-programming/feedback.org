@@ -1,0 +1,33 @@
+
+#+TITLE: Feedback de la charla
+#+AUTHOR: Martín Alsinet
+#+DATE: 2018
+#+OPTIONS: toc:nil ':t num:nil
+#+LANGUAGE: es
+
+* Intro
+
+Practiqué la charla con algunas personas que me dieron sus comentarios y consejos
+
+* Luis
+
+- [X] describir qué es lo que se va a hablar (dejar que las personas sepan qué es lo que viene después)
+- [X] pasar rápido por el ejemplo de Docker
+- [X] ejemplo javascript demasiado largo
+- [X] acortar extensión del ejemplo javascript
+- [X] cuando conviene usarlo: acortar...
+- [X] acortar alternativas
+- [X] explicar primero la propiedad :tangle antes de hacer org-babel-tangle
+- [X] mostrar el archivo raw y activarle la magia...
+- [X] mostrar más ejemplos de "live" coding vs modificar lo ya escrito...
+
+investigar... html media overlay .smil
+
+* Julián 
+
+- [X] detallar experiencia en presentación
+- [X] contradicción? no nos gusta documentar, entonces no me sirve?
+- [X] eliminar ejemplo de docker...
+- [X] aclarar el objetivo, para que la gente "vea" adonde vamos...
+- [ ] motivación de knuth
+
