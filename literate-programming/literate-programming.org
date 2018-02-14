@@ -36,6 +36,7 @@
 
 
 
+
                   Martín Alsinet
 
 
@@ -46,13 +47,13 @@
 
   - Definición
 
-  - El Problema
+  - El problema
 
   - En qué consiste Literate Programming
 
   - Ventajas y Desventajas
 
-  - Cuándo conviene usarlo
+  - Cuándo conviene aplicarlo
 
   - Herramientas disponibles
 
@@ -100,17 +101,17 @@ Consiste en cambiar el enfoque tradicional centrado en el código fuente por un 
 
 - Permite ejecutar todos y cada uno de los pasos mientras uno lee el documento
 
-
 *Desventajas*
 
 - Hay que tomarse el tiempo de pensar y de escribir algo coherente
 
 - Ver punto anterior
 
+
 * ¿Cuándo conviene aplicarlo? 
 
 
- Cuando se tienen procedimientos o secuencias de pasos complejas que requieren mucho trabajo para hacerlas funcionar y que luego de logradas se dejan sin modificar durante mucho tiempo (y generalmente se olvidan)
+  Cuando se tienen procedimientos o secuencias de pasos complejas que requieren mucho trabajo para hacerlas funcionar y que luego de logradas se dejan sin modificar durante mucho tiempo (y generalmente se olvidan)
 
 
 - Configuración, infraestructura, building, devops
@@ -137,7 +138,8 @@ Consiste en cambiar el enfoque tradicional centrado en el código fuente por un 
 
 - *Coffeescript*
   - http://coffeescript.org/#literate 
-  - [[http://ashkenas.com/docco/][Ejemplo de código]] / [[https://github.com/jashkenas/docco/blob/master/docco.litcoffee][Archivo @ Github]]
+  - [[http://ashkenas.com/docco/][Ejemplo de Literate Coffeescript]]
+
 
 - *Jupyter Notebooks*
   - https://try.jupyter.org/
@@ -151,12 +153,21 @@ Consiste en cambiar el enfoque tradicional centrado en el código fuente por un 
 * Demo 
 
 
-     [[file:example-javascript.org][Literate Javascript]]
+
+
+
+
+                [[file:example-javascript.org][Literate Javascript]]
 
 * ¿Preguntas? 
 
 
-         Muchas Gracias!
 
-https://github.com/martinalsinet/talks
+
+
+
+                  Muchas Gracias!
+
+
+       https://github.com/martinalsinet/talks
   
