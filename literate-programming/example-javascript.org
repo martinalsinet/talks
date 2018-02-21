@@ -11,11 +11,36 @@
 
   El objetivo del ejemplo es analizar un archivo de estadísticas de accidentes en la ciudad de Medellín y armar una página sencilla con los resultados más interesantes.
 
-** Disclaimer
+** TODO Disclaimer
 
 Este es un ejercicio a modo de ejemplo y el código no representa en absoluto las mejores prácticas respecto de seguridad o control de errores. 
 
 Más claro: *No copiar y pegar fragmentos de este código en una aplicación productiva.* (para eso está StackOverflow)
+
+* Mini-Tutorial de Org-mode
+** TODO Titulo, autor y opciones
+
+- text-mode | org-mode
+
+** TODO Navegación, TODOs y checkboxes
+
+- tab | shift-tab
+- TODOs
+- checkboxes
+
+** TODO Bloques de código
+*** Lenguajes
+
+- shell :: ifconfig | grep inet
+- javascript :: process.versions
+- python :: sys.version
+
+*** Features
+
+- tangle
+- results: output|table|raw
+- drawer
+- session
 
 * Setup
 ** TODO Inicializar carpetas
@@ -69,8 +94,6 @@ La fuente de los datos que vamos a usar es la iniciativa de Open Data de la Alca
 ** TODO Formato
 
 El formato de los datos es un archivo CSV, veamos qué tiene adentro
-
-ls
 
 ** TODO ¿Qué columnas me interesan?
 
@@ -394,7 +417,7 @@ module.exports = query;
 // var db = new sqlite3.Database('database.db');
 // db.all(
 //        query.por_dia, 
-//        (err, rows) => console.log(rows)
+//        //(err, rows) => console.log(rows)
 //        //(err, rows) => table(rows)
 // );
 #+END_SRC
@@ -797,7 +820,7 @@ Abrimos un navegador en [[http://localhost:3000/]]
 #+END_SRC
 
 * La Yapa
-*** Exportar a HTML
+** TODO Exportar a HTML
 
 #+BEGIN_SRC text
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
@@ -809,11 +832,12 @@ Abrimos un navegador en [[http://localhost:3000/]]
 #+HTML_HEAD: <style type="text/css">pre {background-color: #ddd}</style>
 #+End_SRC text
 
-*** Exportar a PDF
+** TODO Exportar a PDF
 
 #+BEGIN_SRC text
 #+LaTeX_HEADER: \usemintedstyle{default}
 #+LaTeX_HEADER: \usepackage{xcolor}
 #+LaTeX_HEADER: \definecolor{bg}{rgb}{0.95,0.95,0.95}
 #+END_SRC
+
 
