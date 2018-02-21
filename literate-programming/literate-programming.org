@@ -49,11 +49,11 @@
 
   - El problema
 
-  - En qué consiste Literate Programming
+  - ¿En qué consiste Literate Programming?
 
   - Ventajas y Desventajas
 
-  - Cuándo conviene aplicarlo
+  - ¿Cuándo conviene aplicarlo?
 
   - Herramientas disponibles
 
@@ -105,8 +105,7 @@ Consiste en cambiar el enfoque tradicional centrado en el código fuente por un 
 
 - Hay que tomarse el tiempo de pensar y de escribir algo coherente
 
-- Ver punto anterior
-
+- No sirve para todos los tipos de aplicaciones
 
 * ¿Cuándo conviene aplicarlo? 
 
@@ -166,7 +165,7 @@ Consiste en cambiar el enfoque tradicional centrado en el código fuente por un 
 
 
 
-                  Muchas Gracias!
+                  ¡Muchas Gracias!
 
 
        https://github.com/martinalsinet/talks
