@@ -5,10 +5,6 @@
 #+OPTIONS: toc:nil ':t num:nil
 #+LANGUAGE: es
 
-* Intro
-
-Practiqué la charla con algunas personas que me dieron sus comentarios y consejos
-
 * Luis
 
 - [X] describir qué es lo que se va a hablar (dejar que las personas sepan qué es lo que viene después)
@@ -23,7 +19,7 @@ Practiqué la charla con algunas personas que me dieron sus comentarios y consej
 
 investigar... html media overlay .smil
 
-* Julián 
+* Julián
 
 - [X] detallar experiencia en presentación
 - [X] contradicción? no nos gusta documentar, entonces no me sirve?
@@ -31,3 +27,9 @@ investigar... html media overlay .smil
 - [X] aclarar el objetivo, para que la gente "vea" adonde vamos...
 - [ ] motivación de knuth
 
+* Roberto
+
+- [X] Revisar que se pueda abrir el url antes de la charla
+      (sino tener ya abiertos los URLs como backup)
+- [X] Mencionar lenguajes compilados
+- [X] Mencionar sistemas no compatibles / equipo
