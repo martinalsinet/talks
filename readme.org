@@ -4,11 +4,10 @@
 #+OPTIONS: toc:nil ':t num:nil
 #+LANGUAGE: en
 
-|------------------------------------+-------+--------|
-| Charla                             | Dónde | Cuándo |
-|------------------------------------+-------+--------|
-| [[./literate-programming/literate-programming.org][Literate Programming en Javascript]] | TBD   | TBD    |
-|------------------------------------+-------+--------|
-
+|------------------------------------+------------+-------------|
+| Charla                             | Dónde      | Cuándo      |
+|------------------------------------+------------+-------------|
+| [[./literate-programming/literate-programming.org][Literate Programming en Javascript]] | [[http://medellinjs.org][MedellínJS]] | [[https://www.meetup.com/MedellinJS/events/247775270/][21/Feb/2018]] |
+|------------------------------------+------------+-------------|
 
 
