@@ -1,6 +1,5 @@
 node_modules
 *.tex
 *.pdf
-*.js
 *.html
 build
