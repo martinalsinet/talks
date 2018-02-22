@@ -4,7 +4,7 @@
   "description": "Ejemplo de Literate Programming en Javascript",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+      "start": "node src/server.js"
   },
   "author": "Martín Alsinet",
   "license": "CC"

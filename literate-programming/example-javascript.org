@@ -1,4 +1,3 @@
-
 #+TITLE: Ejemplo de Literate Programming: Javascript
 #+AUTHOR: Martín Alsinet
 #+DATE: 2017
@@ -11,24 +10,29 @@
 
   El objetivo del ejemplo es analizar un archivo de estadísticas de accidentes en la ciudad de Medellín y armar una página sencilla con los resultados más interesantes.
 
-** TODO Disclaimer
+** Disclaimer
 
 Este es un ejercicio a modo de ejemplo y el código no representa en absoluto las mejores prácticas respecto de seguridad o control de errores. 
 
 Más claro: *No copiar y pegar fragmentos de este código en una aplicación productiva.* (para eso está StackOverflow)
 
 * Mini-Tutorial de Org-mode
-** TODO Titulo, autor y opciones
+** Titulo, autor y opciones
 
 - text-mode | org-mode
 
-** TODO Navegación, TODOs y checkboxes
+** Navegación, TODOs y checkboxes
 
 - tab | shift-tab
 - TODOs
 - checkboxes
 
-** TODO Bloques de código
+- [ ] item 1
+  - [ ] subitem 1.1
+  - [ ] subitem 1.2
+  - [ ] subitem 1.3
+
+** Bloques de código
 *** Lenguajes
 
 - shell :: ifconfig | grep inet
@@ -43,7 +47,7 @@ Más claro: *No copiar y pegar fragmentos de este código en una aplicación pro
 - session
 
 * Setup
-** TODO Inicializar carpetas
+** Inicializar carpetas
 
 Vamos a guardar el código fuente de la aplicación en la carpeta =src=. Debido a que utilizamos =org-babel-tangle= para generar los archivos .js a partir de este documento, no es necesario que la carpeta sea registrada en el repositorio.
 
@@ -56,7 +60,7 @@ Para comenzar desde cero borramos las carpetas =node_modules=, =src=, y el archi
 #cat .gitignore
 #+END_SRC
 
-** TODO Generar package.json
+** Generar package.json
 
 Generamos un =package.json= mínimo para comenzar el proyecto
 
@@ -67,14 +71,14 @@ Generamos un =package.json= mínimo para comenzar el proyecto
   "description": "Ejemplo de Literate Programming en Javascript",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+      "start": "node src/server.js"
   },
   "author": "Martín Alsinet",
   "license": "CC"
 }
 #+END_SRC
 
-** TODO Instalar dependencias
+** Instalar dependencias
 
 Vamos a necesitar las siguientes dependencias
 
@@ -87,15 +91,19 @@ npm install sqlite3 csv-parse express
 #+END_SRC
 
 * Fuente de datos
-** TODO Origen
+** Origen
 
 La fuente de los datos que vamos a usar es la iniciativa de Open Data de la Alcaldía de Medellín, que pone a disposición [[https://geomedellin-m-medellin.opendata.arcgis.com/datasets/a65c3aff0ef34973a2441b6cd0fbc24a_8][las estadísticas de accidentes de tránsito del año 2016]]
 
-** TODO Formato
+** Formato
 
 El formato de los datos es un archivo CSV, veamos qué tiene adentro
 
-** TODO ¿Qué columnas me interesan?
+#+BEGIN_SRC sh
+head -n 3 Accidentalidad_2016.csv
+#+END_SRC
+
+** ¿Qué columnas me interesan?
 
 Seleccioné las siguientes columnas para extraer del archivo:
 
@@ -114,7 +122,7 @@ La fecha y la hora están en dos campos separados, vamos a fusionarlas en uno so
 Aparentemente hay una ubicación geográfica, porque están los campos =X= e =Y=, pero no son campos de latitud y longitud sino que la ubicación está en formato ARCGIS. Para no complicar el ejemplo, no vamos a utilizar las coordenadas.
 
 * Importar CSV a una base sqlite
-** TODO Parsear CSV
+** Parsear CSV
 
    Para parsear el archivo usamos el módulo =csv-parse= que permite leer un archivo y pasarle una función que recibe un array de objetos con un registro por cada fila.
 
@@ -146,7 +154,7 @@ module.exports = parse_csv;
 //parse_csv('Accidentalidad_2016.csv', console.log, 2);
 #+END_SRC
 
-** TODO Crear Schema
+** Crear Schema
 
 Ahora creo un objeto =schema= que me permite realizar algunas operaciones de mantenimiento de la base de datos. Uso estas operaciones para verificar el funcionamiento del proceso de inserción.
 
@@ -209,7 +217,7 @@ module.exports = schema;
 //s.count();
 #+END_SRC
 
-** TODO Insertar registros
+** Insertar registros
 
 Para insertar los datos parseados uso la función =insert= definida más abajo que ejecuta la query =insert_q= para cada fila del archivo original. Los inserts se ejecutan dentro de una transacción en un entorno serializado, lo que asegura los datos se inserten en secuencia. Luego del commit de la tranasacción se llama a una función =finished= que indica que se ha terminado de procesar los datos.
 
@@ -351,7 +359,7 @@ Me gustaría obtener la siguiente información:
 - Cantidad de accidentes por comuna y barrio
 - Cantidad de accidentes por lugar
 
-** TODO Queries
+** Queries
 
 En esta sección creo el objeto =query= que almacena cada una de las consultas que voy a utilizar. Además le agregué un método =rows= que devuelve un select de la tabla para cuando quiera revisar los registros individualmente.
 
@@ -412,15 +420,17 @@ ORDER BY 2 DESC`
 
 module.exports = query;
 
-// const table = require('/app/src/table.js');
-// const sqlite3 = require('sqlite3').verbose();
-// var db = new sqlite3.Database('database.db');
-// db.all(
-//        query.por_dia, 
-//        //(err, rows) => console.log(rows)
-//        //(err, rows) => table(rows)
-// );
+//  const table = require('/app/src/table.js');
+//  const sqlite3 = require('sqlite3').verbose();
+//  var db = new sqlite3.Database('database.db');
+//  db.all(
+//         query.por_dia, 
+// //        (err, rows) => console.log(rows)
+//         (err, rows) => table(rows)
+//  );
 #+END_SRC
+
+
 
 #+NAME: q-dia
 #+BEGIN_SRC sqlite :db database.db :results table drawer
@@ -430,7 +440,7 @@ group by dia
 order by 2 desc;
 #+END_SRC
 
-** TODO Modelo
+** Modelo
 
 En esta sección, usando el objeto =query=, creo un objeto =accidentes= que es el que se encarga de realizar efectivamente las consultas sobre la base de datos. Debido a que es un ejercicio de ejemplo no le agregué ningún tipo de control de errores. Si la query falla por algún motivo node va a devolver el error en la consola.
 
@@ -533,10 +543,10 @@ Para crear la API me baso en el objeto accidentes del punto anterior.
 var accidentes = require("/app/src/accidentes.js");
 var view_as_table = require("/app/src/table.js");
 
-accidentes.por_dia(view_as_table);
+//accidentes.por_dia(console.log);
 #+END_SRC
 
-** TODO Controlador
+** Controlador
 
 Creo un controlador que agrega métodos para exponer las consultas.
 
@@ -576,7 +586,7 @@ exports.por_diseno = function(req, res){
 }
 #+END_SRC
 
-** TODO Rutas
+** Rutas
 
 #+BEGIN_SRC js :tangle src/routes.js
 module.exports = function(app) {
@@ -609,7 +619,7 @@ module.exports = function(app) {
 };
 #+END_SRC
 
-** TODO Servidor
+** Servidor
 
 En esta sección creamos el servidor que va a ser responsable por la API REST y la página que muestra las estadísticas. Va a escuchar en el puerto *3000* y lo iniciamos con el comando =node src/server.js=, o sino con =npm start=.
 
@@ -639,7 +649,7 @@ process.on('SIGINT', function() {
 console.log('Web server started on: ' + port);
 #+END_SRC
 
-** TODO HTTP test
+** HTTP test
 
 Para verificar el funcionamiento de la API primero hay que ejecutar en una consola el comando =node src/server.js=, que lanza el servidor e inicia la aplicación.
 
@@ -665,7 +675,7 @@ curl http://localhost:3000/accidentes/por_dia
 
 Abrimos un navegador en [[http://localhost:3000/]]
 
-** TODO index.html
+** index.html
 
 #+BEGIN_SRC html :tangle src/index.html
 <!DOCTYPE HTML>
@@ -820,7 +830,7 @@ Abrimos un navegador en [[http://localhost:3000/]]
 #+END_SRC
 
 * La Yapa
-** TODO Exportar a HTML
+** Exportar a HTML
 
 #+BEGIN_SRC text
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
@@ -832,7 +842,7 @@ Abrimos un navegador en [[http://localhost:3000/]]
 #+HTML_HEAD: <style type="text/css">pre {background-color: #ddd}</style>
 #+End_SRC text
 
-** TODO Exportar a PDF
+** Exportar a PDF
 
 #+BEGIN_SRC text
 #+LaTeX_HEADER: \usemintedstyle{default}
