@@ -1,5 +1,5 @@
 
-#+TITLE: Literate Programming en Javascript
+#+TITLE: Literate Programming
 #+AUTHOR: Martín Alsinet
 #+DATE: 2018
 #+OPTIONS: toc:nil ':t num:nil
